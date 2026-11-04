@@ -1,0 +1,4 @@
+site/
+docs/openapi/
+docs/changelog.md
+__pycache__/

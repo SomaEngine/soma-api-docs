@@ -1,0 +1,16 @@
+/* Colores de marca SOMA (teal + navy) sobre el tema Material. */
+:root, [data-md-color-scheme="default"] {
+  --md-primary-fg-color: #0F1F3D;
+  --md-primary-fg-color--light: #23365C;
+  --md-primary-fg-color--dark: #0A1630;
+  --md-accent-fg-color: #00A38C;
+  --md-typeset-a-color: #00866F;
+}
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #111C30;
+  --md-primary-fg-color--light: #1A2740;
+  --md-primary-fg-color--dark: #0A1222;
+  --md-accent-fg-color: #19BFA6;
+  --md-typeset-a-color: #19BFA6;
+  --md-default-bg-color: #0A1222;
+}

@@ -1,0 +1,2967 @@
+{
+  "components": {
+    "schemas": {
+      "BatchList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BatchStatus"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "BatchList",
+        "type": "object"
+      },
+      "BatchOpen": {
+        "additionalProperties": false,
+        "description": "Abre un lote que se llena en partes (POST /v1/ingest/batches).",
+        "properties": {
+          "batch_id": {
+            "description": "Lo genera el cliente. Reenviar el mismo lote no duplica",
+            "maxLength": 100,
+            "minLength": 8,
+            "pattern": "^[A-Za-z0-9._:-]+$",
+            "title": "Batch Id",
+            "type": "string"
+          },
+          "entity": {
+            "$ref": "#/components/schemas/Entity"
+          },
+          "expected_lines": {
+            "description": "Total de líneas que se van a enviar en todas las partes",
+            "minimum": 0.0,
+            "title": "Expected Lines",
+            "type": "integer"
+          },
+          "extracted_at": {
+            "description": "Cuándo se leyó la fuente, con zona horaria. Un lote más viejo que el último aplicado sobre el mismo alcance se rechaza (batch_stale)",
+            "format": "date-time",
+            "title": "Extracted At",
+            "type": "string"
+          },
+          "partition_counts": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PartitionCount"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partition Counts"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SalesScope"
+              },
+              {
+                "$ref": "#/components/schemas/SnapshotScope"
+              }
+            ],
+            "title": "Scope"
+          },
+          "source_system": {
+            "description": "Texto libre para trazabilidad, p. ej. 'ERP · ventas diarias'",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Source System",
+            "type": "string"
+          },
+          "value_basis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValueBasis"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Solo ventas. Bruto o neto lo decide la empresa una vez y no cambia: el primer lote que lo declara lo fija si la empresa no lo tenía; después, uno distinto → value_basis_mismatch. Sin declarar en ningún lado → value_basis_undeclared"
+          }
+        },
+        "required": [
+          "batch_id",
+          "source_system",
+          "extracted_at",
+          "scope",
+          "entity",
+          "expected_lines"
+        ],
+        "title": "BatchOpen",
+        "type": "object"
+      },
+      "BatchState": {
+        "description": "Extensible: el conector trata un estado desconocido como 'aún no terminal'.",
+        "enum": [
+          "open",
+          "validating",
+          "applied",
+          "applied_with_quarantine",
+          "held",
+          "rejected",
+          "expired"
+        ],
+        "title": "BatchState",
+        "type": "string"
+      },
+      "BatchStatus": {
+        "properties": {
+          "api_version": {
+            "title": "Api Version",
+            "type": "string"
+          },
+          "batch_id": {
+            "title": "Batch Id",
+            "type": "string"
+          },
+          "committed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Committed At"
+          },
+          "connector": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Header SOMA-Connector del que abrió el lote",
+            "title": "Connector"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "diff": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DiffCounts"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "entity": {
+            "$ref": "#/components/schemas/Entity"
+          },
+          "expected_lines": {
+            "title": "Expected Lines",
+            "type": "integer"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "lines_quarantined": {
+            "default": 0,
+            "title": "Lines Quarantined",
+            "type": "integer"
+          },
+          "lines_received": {
+            "title": "Lines Received",
+            "type": "integer"
+          },
+          "problem_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "ErrorCode si el lote fue rechazado o retenido",
+            "title": "Problem Code"
+          },
+          "problem_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem Detail"
+          },
+          "quarantine_sample": {
+            "description": "Primeras 100 filas en cuarentena",
+            "items": {
+              "$ref": "#/components/schemas/RowError"
+            },
+            "title": "Quarantine Sample",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BatchState"
+          },
+          "unmatched": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Códigos sin ficha: SKUs y ubicaciones desconocidas. Se guardan igual; una ubicación desconocida retiene el lote (unknown_location) hasta la revisión",
+            "title": "Unmatched"
+          }
+        },
+        "required": [
+          "batch_id",
+          "entity",
+          "status",
+          "api_version",
+          "created_at",
+          "expected_lines",
+          "lines_received"
+        ],
+        "title": "BatchStatus",
+        "type": "object"
+      },
+      "CompanyMeta": {
+        "description": "Lo que el conector necesita para validar local antes de enviar.",
+        "properties": {
+          "api_version": {
+            "title": "Api Version",
+            "type": "string"
+          },
+          "locations": {
+            "items": {
+              "$ref": "#/components/schemas/LocationMeta"
+            },
+            "title": "Locations",
+            "type": "array"
+          },
+          "period_unit": {
+            "enum": [
+              "D",
+              "W",
+              "M"
+            ],
+            "title": "Period Unit",
+            "type": "string"
+          },
+          "uom_conversions": {
+            "items": {
+              "$ref": "#/components/schemas/UomConversion"
+            },
+            "title": "Uom Conversions",
+            "type": "array"
+          },
+          "value_basis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValueBasis"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "None = la empresa todavía no lo declaró: el primer lote de ventas que lo declara lo fija"
+          }
+        },
+        "required": [
+          "api_version",
+          "period_unit",
+          "value_basis",
+          "locations",
+          "uom_conversions"
+        ],
+        "title": "CompanyMeta",
+        "type": "object"
+      },
+      "DataHealth": {
+        "properties": {
+          "as_of": {
+            "format": "date-time",
+            "title": "As Of",
+            "type": "string"
+          },
+          "blocking_reasons": {
+            "description": "ErrorCode de cada bloqueo vigente, p. ej. unknown_location",
+            "items": {
+              "type": "string"
+            },
+            "title": "Blocking Reasons",
+            "type": "array"
+          },
+          "runs_blocked": {
+            "default": false,
+            "description": "True = ningún motor de la empresa puede correr (corte incoherente o ubicación sin definir)",
+            "title": "Runs Blocked",
+            "type": "boolean"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceHealth"
+            },
+            "title": "Sources",
+            "type": "array"
+          }
+        },
+        "required": [
+          "as_of",
+          "sources"
+        ],
+        "title": "DataHealth",
+        "type": "object"
+      },
+      "DiffCounts": {
+        "description": "Resultado de comparar el lote con lo que SOMA tiene dentro del alcance (§11.4).",
+        "properties": {
+          "deleted": {
+            "default": 0,
+            "title": "Deleted",
+            "type": "integer"
+          },
+          "deleted_value_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted Value Usd"
+          },
+          "inserted": {
+            "default": 0,
+            "title": "Inserted",
+            "type": "integer"
+          },
+          "unchanged": {
+            "default": 0,
+            "title": "Unchanged",
+            "type": "integer"
+          },
+          "updated": {
+            "default": 0,
+            "title": "Updated",
+            "type": "integer"
+          }
+        },
+        "title": "DiffCounts",
+        "type": "object"
+      },
+      "DryRunResult": {
+        "properties": {
+          "batch_id": {
+            "title": "Batch Id",
+            "type": "string"
+          },
+          "diff": {
+            "$ref": "#/components/schemas/DiffCounts"
+          },
+          "lines_quarantined": {
+            "title": "Lines Quarantined",
+            "type": "integer"
+          },
+          "problem_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem Code"
+          },
+          "problem_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Problem Detail"
+          },
+          "problems": {
+            "description": "Todos los ErrorCode que el lote tendría, del más grave al menos; problem_code es el primero",
+            "items": {
+              "type": "string"
+            },
+            "title": "Problems",
+            "type": "array"
+          },
+          "quarantine_sample": {
+            "items": {
+              "$ref": "#/components/schemas/RowError"
+            },
+            "title": "Quarantine Sample",
+            "type": "array"
+          },
+          "unmatched": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Códigos sin ficha: skus (se cargan igual) y locations (retienen el lote)",
+            "title": "Unmatched"
+          },
+          "would_status": {
+            "$ref": "#/components/schemas/BatchState"
+          }
+        },
+        "required": [
+          "batch_id",
+          "would_status",
+          "diff",
+          "lines_quarantined"
+        ],
+        "title": "DryRunResult",
+        "type": "object"
+      },
+      "Entity": {
+        "enum": [
+          "sales",
+          "inventory",
+          "purchase_orders",
+          "production_orders"
+        ],
+        "title": "Entity",
+        "type": "string"
+      },
+      "ErrorCode": {
+        "enum": [
+          "unauthorized",
+          "forbidden_scope",
+          "rate_limited",
+          "validation_error",
+          "payload_too_large",
+          "batch_not_found",
+          "batch_id_conflict",
+          "batch_not_open",
+          "batch_expired",
+          "batch_stale",
+          "batch_scope_violation",
+          "batch_count_mismatch",
+          "batch_quarantine_exceeded",
+          "value_basis_mismatch",
+          "value_basis_undeclared",
+          "location_declared_without_lines",
+          "as_of_in_future",
+          "deletion_guard_tripped",
+          "volume_anomaly",
+          "unknown_location",
+          "first_batch_review"
+        ],
+        "title": "ErrorCode",
+        "type": "string"
+      },
+      "InventoryBatch": {
+        "additionalProperties": false,
+        "properties": {
+          "batch_id": {
+            "description": "Lo genera el cliente. Reenviar el mismo lote no duplica",
+            "maxLength": 100,
+            "minLength": 8,
+            "pattern": "^[A-Za-z0-9._:-]+$",
+            "title": "Batch Id",
+            "type": "string"
+          },
+          "extracted_at": {
+            "description": "Cuándo se leyó la fuente, con zona horaria. Un lote más viejo que el último aplicado sobre el mismo alcance se rechaza (batch_stale)",
+            "format": "date-time",
+            "title": "Extracted At",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryLine"
+            },
+            "maxItems": 10000,
+            "title": "Lines",
+            "type": "array"
+          },
+          "partition_counts": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PartitionCount"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partition Counts"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SalesScope"
+              },
+              {
+                "$ref": "#/components/schemas/SnapshotScope"
+              }
+            ],
+            "title": "Scope"
+          },
+          "source_system": {
+            "description": "Texto libre para trazabilidad, p. ej. 'ERP · ventas diarias'",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Source System",
+            "type": "string"
+          },
+          "value_basis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValueBasis"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Solo ventas. Bruto o neto lo decide la empresa una vez y no cambia: el primer lote que lo declara lo fija si la empresa no lo tenía; después, uno distinto → value_basis_mismatch. Sin declarar en ningún lado → value_basis_undeclared"
+          }
+        },
+        "required": [
+          "batch_id",
+          "source_system",
+          "extracted_at",
+          "scope",
+          "lines"
+        ],
+        "title": "InventoryBatch",
+        "type": "object"
+      },
+      "InventoryLine": {
+        "additionalProperties": false,
+        "description": "Existencia disponible en la fecha de corte `as_of` (§4.3). Disponible = sin comprometido\nni cuarentena.\n\nLote y vencimiento son opcionales y van juntos con los productos que vencen: si vienen, los\nanálisis de vencimiento los usan; si no vienen, el inventario se trata como **sin vencimiento**.\nGrano: aditivas por (ubicación, SKU, lote, vencimiento): líneas con la misma clave se suman.",
+        "properties": {
+          "exp_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exp Date"
+          },
+          "location": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Location",
+            "type": "string"
+          },
+          "lot": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lot"
+          },
+          "quantity_on_hand": {
+            "minimum": 0.0,
+            "title": "Quantity On Hand",
+            "type": "number"
+          },
+          "sku": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Sku",
+            "type": "string"
+          },
+          "uom": {
+            "anyOf": [
+              {
+                "maxLength": 16,
+                "minLength": 1,
+                "pattern": "^[A-Z0-9_]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unidad de la cantidad. Omitida = unidad base del SKU. Una unidad sin conversión para ese SKU va a cuarentena (unknown_uom).",
+            "title": "Uom"
+          },
+          "value_usd": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Usd"
+          }
+        },
+        "required": [
+          "location",
+          "sku",
+          "quantity_on_hand"
+        ],
+        "title": "InventoryLine",
+        "type": "object"
+      },
+      "LocationMeta": {
+        "properties": {
+          "client_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Code"
+          },
+          "location_code": {
+            "title": "Location Code",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "location_code",
+          "name"
+        ],
+        "title": "LocationMeta",
+        "type": "object"
+      },
+      "Part": {
+        "additionalProperties": false,
+        "properties": {
+          "lines": {
+            "description": "Líneas de la entidad del lote (SalesLine, InventoryLine, PurchaseOrderLine o ProductionOrderLine). Se validan una por una: una línea mala va a cuarentena",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "maxItems": 10000,
+            "minItems": 1,
+            "title": "Lines",
+            "type": "array"
+          },
+          "part_number": {
+            "description": "Reenviar la misma parte con el mismo contenido no duplica",
+            "minimum": 1.0,
+            "title": "Part Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "part_number",
+          "lines"
+        ],
+        "title": "Part",
+        "type": "object"
+      },
+      "PartAck": {
+        "properties": {
+          "batch_id": {
+            "title": "Batch Id",
+            "type": "string"
+          },
+          "lines_received": {
+            "title": "Lines Received",
+            "type": "integer"
+          },
+          "part_number": {
+            "title": "Part Number",
+            "type": "integer"
+          },
+          "total_lines_received": {
+            "title": "Total Lines Received",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "batch_id",
+          "part_number",
+          "lines_received",
+          "total_lines_received"
+        ],
+        "title": "PartAck",
+        "type": "object"
+      },
+      "PartitionCount": {
+        "additionalProperties": false,
+        "description": "Líneas que el conector extrajo para una partición. Detecta truncamiento en tránsito.",
+        "properties": {
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "lines": {
+            "minimum": 0.0,
+            "title": "Lines",
+            "type": "integer"
+          },
+          "location": {
+            "title": "Location",
+            "type": "string"
+          }
+        },
+        "required": [
+          "location",
+          "lines"
+        ],
+        "title": "PartitionCount",
+        "type": "object"
+      },
+      "Problem": {
+        "description": "Cuerpo `application/problem+json` de toda respuesta de error de v1.",
+        "properties": {
+          "batch_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Id"
+          },
+          "code": {
+            "$ref": "#/components/schemas/ErrorCode"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Detalle adicional (p. ej. errores de validación 422)",
+            "title": "Errors"
+          },
+          "status": {
+            "title": "Status",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "description": "Tipo de error: urn:soma:api:error:<code>",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "code"
+        ],
+        "title": "Problem",
+        "type": "object"
+      },
+      "ProductionOrderLine": {
+        "additionalProperties": false,
+        "description": "Orden de producción en curso (§4.5). Planificadas, canceladas y anuladas no se envían.\n\nIdentidad: (ubicación, order_ref, sku). Clave repetida → `duplicate_key`, no se suma.",
+        "properties": {
+          "expected_completion_date": {
+            "format": "date",
+            "title": "Expected Completion Date",
+            "type": "string"
+          },
+          "location": {
+            "description": "Planta",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Location",
+            "type": "string"
+          },
+          "order_ref": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Order Ref",
+            "type": "string"
+          },
+          "quantity_pending": {
+            "description": "Planificado − producido",
+            "exclusiveMinimum": 0.0,
+            "title": "Quantity Pending",
+            "type": "number"
+          },
+          "sku": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Sku",
+            "type": "string"
+          },
+          "soma_ref": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Soma Ref"
+          },
+          "status": {
+            "enum": [
+              "released",
+              "in_progress"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "uom": {
+            "anyOf": [
+              {
+                "maxLength": 16,
+                "minLength": 1,
+                "pattern": "^[A-Z0-9_]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unidad de la cantidad. Omitida = unidad base del SKU. Una unidad sin conversión para ese SKU va a cuarentena (unknown_uom).",
+            "title": "Uom"
+          }
+        },
+        "required": [
+          "location",
+          "order_ref",
+          "sku",
+          "quantity_pending",
+          "expected_completion_date",
+          "status"
+        ],
+        "title": "ProductionOrderLine",
+        "type": "object"
+      },
+      "ProductionOrdersBatch": {
+        "additionalProperties": false,
+        "properties": {
+          "batch_id": {
+            "description": "Lo genera el cliente. Reenviar el mismo lote no duplica",
+            "maxLength": 100,
+            "minLength": 8,
+            "pattern": "^[A-Za-z0-9._:-]+$",
+            "title": "Batch Id",
+            "type": "string"
+          },
+          "extracted_at": {
+            "description": "Cuándo se leyó la fuente, con zona horaria. Un lote más viejo que el último aplicado sobre el mismo alcance se rechaza (batch_stale)",
+            "format": "date-time",
+            "title": "Extracted At",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionOrderLine"
+            },
+            "maxItems": 10000,
+            "title": "Lines",
+            "type": "array"
+          },
+          "partition_counts": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PartitionCount"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partition Counts"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SalesScope"
+              },
+              {
+                "$ref": "#/components/schemas/SnapshotScope"
+              }
+            ],
+            "title": "Scope"
+          },
+          "source_system": {
+            "description": "Texto libre para trazabilidad, p. ej. 'ERP · ventas diarias'",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Source System",
+            "type": "string"
+          },
+          "value_basis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValueBasis"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Solo ventas. Bruto o neto lo decide la empresa una vez y no cambia: el primer lote que lo declara lo fija si la empresa no lo tenía; después, uno distinto → value_basis_mismatch. Sin declarar en ningún lado → value_basis_undeclared"
+          }
+        },
+        "required": [
+          "batch_id",
+          "source_system",
+          "extracted_at",
+          "scope",
+          "lines"
+        ],
+        "title": "ProductionOrdersBatch",
+        "type": "object"
+      },
+      "PurchaseOrderLine": {
+        "additionalProperties": false,
+        "description": "Línea de OC abierta (§4.4). Borradores, canceladas y anuladas no se envían.\n\nIdentidad: (ubicación, po_number, line_ref, sku). Una clave repetida en el lote **no** se\nsuma: la segunda línea va a cuarentena con `duplicate_key`.",
+        "properties": {
+          "expected_date": {
+            "format": "date",
+            "title": "Expected Date",
+            "type": "string"
+          },
+          "line_ref": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Line Ref",
+            "type": "string"
+          },
+          "location": {
+            "description": "Ubicación destino",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Location",
+            "type": "string"
+          },
+          "order_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Date"
+          },
+          "po_number": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Po Number",
+            "type": "string"
+          },
+          "quantity_pending": {
+            "description": "Pedido − recibido",
+            "exclusiveMinimum": 0.0,
+            "title": "Quantity Pending",
+            "type": "number"
+          },
+          "sku": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Sku",
+            "type": "string"
+          },
+          "soma_ref": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Referencia a la aprobación de SOMA que originó la orden (§4.6)",
+            "title": "Soma Ref"
+          },
+          "supplier_code": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supplier Code"
+          },
+          "uom": {
+            "anyOf": [
+              {
+                "maxLength": 16,
+                "minLength": 1,
+                "pattern": "^[A-Z0-9_]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unidad de la cantidad. Omitida = unidad base del SKU. Una unidad sin conversión para ese SKU va a cuarentena (unknown_uom).",
+            "title": "Uom"
+          }
+        },
+        "required": [
+          "location",
+          "po_number",
+          "line_ref",
+          "sku",
+          "quantity_pending",
+          "expected_date"
+        ],
+        "title": "PurchaseOrderLine",
+        "type": "object"
+      },
+      "PurchaseOrdersBatch": {
+        "additionalProperties": false,
+        "properties": {
+          "batch_id": {
+            "description": "Lo genera el cliente. Reenviar el mismo lote no duplica",
+            "maxLength": 100,
+            "minLength": 8,
+            "pattern": "^[A-Za-z0-9._:-]+$",
+            "title": "Batch Id",
+            "type": "string"
+          },
+          "extracted_at": {
+            "description": "Cuándo se leyó la fuente, con zona horaria. Un lote más viejo que el último aplicado sobre el mismo alcance se rechaza (batch_stale)",
+            "format": "date-time",
+            "title": "Extracted At",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/PurchaseOrderLine"
+            },
+            "maxItems": 10000,
+            "title": "Lines",
+            "type": "array"
+          },
+          "partition_counts": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PartitionCount"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partition Counts"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SalesScope"
+              },
+              {
+                "$ref": "#/components/schemas/SnapshotScope"
+              }
+            ],
+            "title": "Scope"
+          },
+          "source_system": {
+            "description": "Texto libre para trazabilidad, p. ej. 'ERP · ventas diarias'",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Source System",
+            "type": "string"
+          },
+          "value_basis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValueBasis"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Solo ventas. Bruto o neto lo decide la empresa una vez y no cambia: el primer lote que lo declara lo fija si la empresa no lo tenía; después, uno distinto → value_basis_mismatch. Sin declarar en ningún lado → value_basis_undeclared"
+          }
+        },
+        "required": [
+          "batch_id",
+          "source_system",
+          "extracted_at",
+          "scope",
+          "lines"
+        ],
+        "title": "PurchaseOrdersBatch",
+        "type": "object"
+      },
+      "RowError": {
+        "description": "Una línea que fue a cuarentena.",
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/RowErrorCode"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "line": {
+            "description": "Posición de la línea dentro de su parte, desde 1",
+            "title": "Line",
+            "type": "integer"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "part": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Part"
+          }
+        },
+        "required": [
+          "line",
+          "code",
+          "message"
+        ],
+        "title": "RowError",
+        "type": "object"
+      },
+      "RowErrorCode": {
+        "enum": [
+          "missing_field",
+          "invalid_type",
+          "invalid_date",
+          "invalid_value",
+          "non_positive_quantity",
+          "negative_quantity",
+          "negative_value",
+          "field_not_allowed",
+          "date_order",
+          "unknown_uom",
+          "duplicate_key"
+        ],
+        "title": "RowErrorCode",
+        "type": "string"
+      },
+      "SalesBatch": {
+        "additionalProperties": false,
+        "properties": {
+          "batch_id": {
+            "description": "Lo genera el cliente. Reenviar el mismo lote no duplica",
+            "maxLength": 100,
+            "minLength": 8,
+            "pattern": "^[A-Za-z0-9._:-]+$",
+            "title": "Batch Id",
+            "type": "string"
+          },
+          "extracted_at": {
+            "description": "Cuándo se leyó la fuente, con zona horaria. Un lote más viejo que el último aplicado sobre el mismo alcance se rechaza (batch_stale)",
+            "format": "date-time",
+            "title": "Extracted At",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/SalesLine"
+            },
+            "maxItems": 10000,
+            "title": "Lines",
+            "type": "array"
+          },
+          "partition_counts": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PartitionCount"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partition Counts"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SalesScope"
+              },
+              {
+                "$ref": "#/components/schemas/SnapshotScope"
+              }
+            ],
+            "title": "Scope"
+          },
+          "source_system": {
+            "description": "Texto libre para trazabilidad, p. ej. 'ERP · ventas diarias'",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Source System",
+            "type": "string"
+          },
+          "value_basis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValueBasis"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Solo ventas. Bruto o neto lo decide la empresa una vez y no cambia: el primer lote que lo declara lo fija si la empresa no lo tenía; después, uno distinto → value_basis_mismatch. Sin declarar en ningún lado → value_basis_undeclared"
+          }
+        },
+        "required": [
+          "batch_id",
+          "source_system",
+          "extracted_at",
+          "scope",
+          "lines"
+        ],
+        "title": "SalesBatch",
+        "type": "object"
+      },
+      "SalesLine": {
+        "additionalProperties": false,
+        "description": "Movimiento de venta o devolución de un día (diseno-api-ingesta.md §4.2).\n\nGrano: las líneas son **aditivas**. Varias con la misma clave (`line_key`: ubicación, SKU,\nfecha, movimiento y, en devoluciones, fecha original) se **suman** — cantidad, valor y venta\nperdida —, ya convertidas a unidad base. El conector puede enviar líneas de documento o ya\nagregadas: el resultado es el mismo. `document_ref` es solo trazabilidad, no identidad.",
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "document_ref": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Ref"
+          },
+          "location": {
+            "description": "location_code o client_code de SOMA",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Location",
+            "type": "string"
+          },
+          "lost_sales_qty": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lost Sales Qty"
+          },
+          "movement": {
+            "enum": [
+              "sale",
+              "return"
+            ],
+            "title": "Movement",
+            "type": "string"
+          },
+          "original_sale_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Solo en return: fecha de la venta que se devuelve",
+            "title": "Original Sale Date"
+          },
+          "quantity": {
+            "description": "Siempre > 0; la devolución se indica con movement",
+            "exclusiveMinimum": 0.0,
+            "title": "Quantity",
+            "type": "number"
+          },
+          "sku": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Sku",
+            "type": "string"
+          },
+          "uom": {
+            "anyOf": [
+              {
+                "maxLength": 16,
+                "minLength": 1,
+                "pattern": "^[A-Z0-9_]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unidad de la cantidad. Omitida = unidad base del SKU. Una unidad sin conversión para ese SKU va a cuarentena (unknown_uom).",
+            "title": "Uom"
+          },
+          "value_usd": {
+            "description": "Sin IVA; bruto o neto según la empresa",
+            "minimum": 0.0,
+            "title": "Value Usd",
+            "type": "number"
+          }
+        },
+        "required": [
+          "location",
+          "sku",
+          "date",
+          "movement",
+          "quantity",
+          "value_usd"
+        ],
+        "title": "SalesLine",
+        "type": "object"
+      },
+      "SalesScope": {
+        "additionalProperties": false,
+        "description": "Ventana de fechas × ubicaciones. Dentro, lo que no viene es cero (§4.1).",
+        "properties": {
+          "date_from": {
+            "format": "date",
+            "title": "Date From",
+            "type": "string"
+          },
+          "date_to": {
+            "format": "date",
+            "title": "Date To",
+            "type": "string"
+          },
+          "locations": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Locations",
+            "type": "array"
+          }
+        },
+        "required": [
+          "date_from",
+          "date_to",
+          "locations"
+        ],
+        "title": "SalesScope",
+        "type": "object"
+      },
+      "SnapshotScope": {
+        "additionalProperties": false,
+        "description": "Foto en la fecha de corte `as_of` por ubicación (inventario, OC, OP).",
+        "properties": {
+          "as_of": {
+            "description": "Fecha de corte de la foto. La define el conector según la fuente del cliente; SOMA la guarda tal cual como snapshot_date, sin interpretarla",
+            "format": "date",
+            "title": "As Of",
+            "type": "string"
+          },
+          "empty_locations": {
+            "description": "Ubicaciones declaradas que van vacías a propósito. Sin esta marca, una ubicación declarada sin líneas rechaza el lote",
+            "items": {
+              "type": "string"
+            },
+            "title": "Empty Locations",
+            "type": "array"
+          },
+          "locations": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Locations",
+            "type": "array"
+          }
+        },
+        "required": [
+          "as_of",
+          "locations"
+        ],
+        "title": "SnapshotScope",
+        "type": "object"
+      },
+      "SourceHealth": {
+        "properties": {
+          "age_periods": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age Periods"
+          },
+          "entity": {
+            "$ref": "#/components/schemas/Entity"
+          },
+          "last_batch_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Batch Id"
+          },
+          "last_cut": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Cut"
+          },
+          "location_code": {
+            "title": "Location Code",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "fresh",
+              "late",
+              "stale",
+              "missing"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity",
+          "location_code",
+          "last_cut",
+          "age_periods",
+          "state"
+        ],
+        "title": "SourceHealth",
+        "type": "object"
+      },
+      "UomConversion": {
+        "properties": {
+          "factor": {
+            "description": "Unidades base por cada unidad de `uom`",
+            "title": "Factor",
+            "type": "number"
+          },
+          "sku": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "None = vale para todos los SKUs de la empresa",
+            "title": "Sku"
+          },
+          "uom": {
+            "title": "Uom",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uom",
+          "factor"
+        ],
+        "title": "UomConversion",
+        "type": "object"
+      },
+      "ValueBasis": {
+        "description": "Base del valor de venta. Siempre sin IVA. La elige la empresa (plan §2.4).",
+        "enum": [
+          "gross",
+          "net"
+        ],
+        "title": "ValueBasis",
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "SomaApiKey": {
+        "description": "Clave de API de la empresa",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "API pública de SOMA para integrar datos operacionales (ventas, inventario, órdenes de compra y de producción).",
+    "title": "SOMA API",
+    "version": "1.0.0-draft"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/data-health": {
+      "get": {
+        "operationId": "data_health_v1_data_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataHealth"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Sin clave o clave inválida"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La clave no tiene ese alcance"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "El encabezado no cumple el contrato"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Límite de requests"
+          }
+        },
+        "security": [
+          {
+            "SomaApiKey": []
+          }
+        ],
+        "summary": "Frescura por fuente y ubicación",
+        "tags": [
+          "meta"
+        ]
+      }
+    },
+    "/v1/ingest/batches": {
+      "get": {
+        "operationId": "list_batches_v1_ingest_batches_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "entity",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Entity"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Entity"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/BatchState"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Sin clave o clave inválida"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La clave no tiene ese alcance"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "El encabezado no cumple el contrato"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Límite de requests"
+          }
+        },
+        "security": [
+          {
+            "SomaApiKey": []
+          }
+        ],
+        "summary": "Historial de lotes",
+        "tags": [
+          "ingest"
+        ]
+      },
+      "post": {
+        "operationId": "open_batch_v1_ingest_batches_post",
+        "parameters": [
+          {
+            "description": "Identifica al conector y su versión, p. ej. `acme-erp/1.4.0`",
+            "in": "header",
+            "name": "SOMA-Connector",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Identifica al conector y su versión, p. ej. `acme-erp/1.4.0`",
+              "title": "Soma-Connector"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchOpen"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Sin clave o clave inválida"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La clave no tiene ese alcance"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflicto con el estado del lote"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "El encabezado no cumple el contrato"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Límite de requests"
+          }
+        },
+        "security": [
+          {
+            "SomaApiKey": []
+          }
+        ],
+        "summary": "Abre un lote",
+        "tags": [
+          "ingest"
+        ]
+      }
+    },
+    "/v1/ingest/batches/{batch_id}": {
+      "get": {
+        "operationId": "get_batch_v1_ingest_batches__batch_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 8,
+              "title": "Batch Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Sin clave o clave inválida"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La clave no tiene ese alcance"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Lote no encontrado"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "El encabezado no cumple el contrato"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Límite de requests"
+          }
+        },
+        "security": [
+          {
+            "SomaApiKey": []
+          }
+        ],
+        "summary": "Estado, conteos y cuarentena",
+        "tags": [
+          "ingest"
+        ]
+      }
+    },
+    "/v1/ingest/batches/{batch_id}/commit": {
+      "post": {
+        "operationId": "commit_batch_v1_ingest_batches__batch_id__commit_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 8,
+              "title": "Batch Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Sin clave o clave inválida"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La clave no tiene ese alcance"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Lote no encontrado"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflicto con el estado del lote"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Lote vencido"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "El encabezado no cumple el contrato"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Límite de requests"
+          }
+        },
+        "security": [
+          {
+            "SomaApiKey": []
+          }
+        ],
+        "summary": "Cierra el lote y lo aplica en segundo plano",
+        "tags": [
+          "ingest"
+        ]
+      }
+    },
+    "/v1/ingest/batches/{batch_id}/dry-run": {
+      "post": {
+        "operationId": "dry_run_v1_ingest_batches__batch_id__dry_run_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 8,
+              "title": "Batch Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DryRunResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Sin clave o clave inválida"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La clave no tiene ese alcance"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Lote no encontrado"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflicto con el estado del lote"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "El encabezado no cumple el contrato"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Límite de requests"
+          }
+        },
+        "security": [
+          {
+            "SomaApiKey": []
+          }
+        ],
+        "summary": "Valida y calcula la diferencia sin aplicar nada",
+        "tags": [
+          "ingest"
+        ]
+      }
+    },
+    "/v1/ingest/batches/{batch_id}/parts": {
+      "post": {
+        "operationId": "add_part_v1_ingest_batches__batch_id__parts_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 8,
+              "title": "Batch Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Part"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartAck"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Sin clave o clave inválida"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La clave no tiene ese alcance"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Lote no encontrado"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflicto con el estado del lote"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Lote vencido"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Parte demasiado grande"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "El encabezado no cumple el contrato"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Límite de requests"
+          }
+        },
+        "security": [
+          {
+            "SomaApiKey": []
+          }
+        ],
+        "summary": "Envía una parte del lote",
+        "tags": [
+          "ingest"
+        ]
+      }
+    },
+    "/v1/ingest/inventory": {
+      "post": {
+        "operationId": "ingest_inventory_v1_ingest_inventory_post",
+        "parameters": [
+          {
+            "description": "Identifica al conector y su versión, p. ej. `acme-erp/1.4.0`",
+            "in": "header",
+            "name": "SOMA-Connector",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Identifica al conector y su versión, p. ej. `acme-erp/1.4.0`",
+              "title": "Soma-Connector"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryBatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Sin clave o clave inválida"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La clave no tiene ese alcance"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflicto con el estado del lote"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Parte demasiado grande"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "El encabezado no cumple el contrato"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Límite de requests"
+          }
+        },
+        "security": [
+          {
+            "SomaApiKey": []
+          }
+        ],
+        "summary": "Atajo de una llamada: lote chico de inventory",
+        "tags": [
+          "ingest"
+        ]
+      }
+    },
+    "/v1/ingest/production_orders": {
+      "post": {
+        "operationId": "ingest_production_orders_v1_ingest_production_orders_post",
+        "parameters": [
+          {
+            "description": "Identifica al conector y su versión, p. ej. `acme-erp/1.4.0`",
+            "in": "header",
+            "name": "SOMA-Connector",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Identifica al conector y su versión, p. ej. `acme-erp/1.4.0`",
+              "title": "Soma-Connector"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductionOrdersBatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Sin clave o clave inválida"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La clave no tiene ese alcance"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflicto con el estado del lote"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Parte demasiado grande"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "El encabezado no cumple el contrato"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Límite de requests"
+          }
+        },
+        "security": [
+          {
+            "SomaApiKey": []
+          }
+        ],
+        "summary": "Atajo de una llamada: lote chico de production_orders",
+        "tags": [
+          "ingest"
+        ]
+      }
+    },
+    "/v1/ingest/purchase_orders": {
+      "post": {
+        "operationId": "ingest_purchase_orders_v1_ingest_purchase_orders_post",
+        "parameters": [
+          {
+            "description": "Identifica al conector y su versión, p. ej. `acme-erp/1.4.0`",
+            "in": "header",
+            "name": "SOMA-Connector",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Identifica al conector y su versión, p. ej. `acme-erp/1.4.0`",
+              "title": "Soma-Connector"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurchaseOrdersBatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Sin clave o clave inválida"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La clave no tiene ese alcance"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflicto con el estado del lote"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Parte demasiado grande"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "El encabezado no cumple el contrato"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Límite de requests"
+          }
+        },
+        "security": [
+          {
+            "SomaApiKey": []
+          }
+        ],
+        "summary": "Atajo de una llamada: lote chico de purchase_orders",
+        "tags": [
+          "ingest"
+        ]
+      }
+    },
+    "/v1/ingest/sales": {
+      "post": {
+        "operationId": "ingest_sales_v1_ingest_sales_post",
+        "parameters": [
+          {
+            "description": "Identifica al conector y su versión, p. ej. `acme-erp/1.4.0`",
+            "in": "header",
+            "name": "SOMA-Connector",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Identifica al conector y su versión, p. ej. `acme-erp/1.4.0`",
+              "title": "Soma-Connector"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SalesBatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Sin clave o clave inválida"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La clave no tiene ese alcance"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflicto con el estado del lote"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Parte demasiado grande"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "El encabezado no cumple el contrato"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Límite de requests"
+          }
+        },
+        "security": [
+          {
+            "SomaApiKey": []
+          }
+        ],
+        "summary": "Atajo de una llamada: lote chico de sales",
+        "tags": [
+          "ingest"
+        ]
+      }
+    },
+    "/v1/meta": {
+      "get": {
+        "operationId": "get_meta_v1_meta_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyMeta"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Sin clave o clave inválida"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La clave no tiene ese alcance"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "El encabezado no cumple el contrato"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Límite de requests"
+          }
+        },
+        "security": [
+          {
+            "SomaApiKey": []
+          }
+        ],
+        "summary": "Ubicaciones, unidades y base del valor de la empresa de la clave",
+        "tags": [
+          "meta"
+        ]
+      }
+    }
+  }
+}
