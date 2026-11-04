@@ -1,6 +1,6 @@
 site_name: API de SOMA
 site_description: Documentación pública de la API de SOMA Engine
-site_url: https://somaengine.github.io/soma-api-docs/
+site_url: https://docs.somaengine.co/
 repo_url: https://github.com/SomaEngine/soma-api-docs
 repo_name: SomaEngine/soma-api-docs
 edit_uri: ""

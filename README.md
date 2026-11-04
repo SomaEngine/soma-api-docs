@@ -9,7 +9,7 @@ producción en curso**. Es la misma para todos los clientes.
 
 | | |
 |---|---|
-| **Sitio de documentación** | https://somaengine.github.io/soma-api-docs/ |
+| **Sitio de documentación** | https://docs.somaengine.co/ |
 | **Cómo funciona una integración** (visión general) | [`docs/index.md`](docs/index.md) |
 | **Guía técnica v1** | [`docs/guia/v1.md`](docs/guia/v1.md) |
 | **Catálogo de errores** | [`docs/errores.md`](docs/errores.md) |
