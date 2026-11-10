@@ -34,6 +34,7 @@ encabezado.
 | `batch_id_conflict` | 409 | Mismo `batch_id`, o mismo número de parte, con contenido distinto | Usa un `batch_id` nuevo |
 | `batch_not_open` | 409 | Parte, dry-run o commit sobre un lote ya cerrado | Consulta el estado |
 | `batch_expired` | 410 | Lote abierto más de 24 h sin confirmar | Reenvía con un `batch_id` nuevo |
+| `service_unavailable` | 503 | La base de SOMA no acepta escrituras por un momento (mantenimiento, ampliación de disco, reinicio) | Espera `Retry-After` y reintenta la misma llamada: lo ya enviado no se pierde y reenviar no duplica |
 
 ## Errores de lote
 
@@ -51,8 +52,9 @@ Al validar, el lote puede quedar **rechazado** (se conservan los datos anteriore
 | `value_basis_undeclared` | rechazado | Ni la empresa ni el lote dicen si el valor es bruto o neto. El primer lote que lo declara lo fija |
 | `location_declared_without_lines` | rechazado | Inventario, OC u OP: ubicación declarada sin líneas y fuera de `empty_locations` |
 | `as_of_in_future` | rechazado | Fecha de corte posterior a hoy |
+| `batch_discarded` | rechazado | Un lote retenido que la empresa descartó en la revisión de datos, o que reemplazó un lote más nuevo que cubre su alcance |
 | `deletion_guard_tripped` | retenido | La diferencia borraría más que el umbral de la empresa |
-| `volume_anomaly` | retenido | El total de la empresa cae bajo el 15% de lo esperado para ese período |
+| `volume_anomaly` | retenido | Una semana completa del lote trae menos del 15% de lo esperado (plan aprobado, misma semana del año anterior o promedio de 8 semanas) |
 | `unknown_location` | retenido | Trae ubicaciones que SOMA no conoce. Las líneas se guardan y no cuentan para el tope de cuarentena. Mientras la empresa no la defina, no corre ningún motor de la empresa |
 | `first_batch_review` | retenido | El alcance tiene datos cargados por archivo: el primer lote de la API sobre ellos se revisa antes de reemplazarlos |
 

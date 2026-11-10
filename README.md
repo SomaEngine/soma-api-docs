@@ -18,8 +18,8 @@ producción en curso**. Es la misma para todos los clientes.
 
 ## Estado
 
-Versión **`1.0.0-draft`**: el contrato está publicado y el envío de ventas funciona en el
-ambiente de pruebas. El contrato puede recibir ajustes hasta la versión `1.0.0`; cada cambio
+Versión **`1.0.0-draft`**: el contrato está publicado y el envío de ventas funciona de punta a
+punta en el ambiente de pruebas: lote, `dry-run`, `commit`, revisión y frescura por ubicación. El contrato puede recibir ajustes hasta la versión `1.0.0`; cada cambio
 queda en el changelog y en su release.
 
 Para recibir un aviso con cada versión nueva: **Watch → Custom → Releases** en este repositorio.

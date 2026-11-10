@@ -9,6 +9,31 @@ Cada cambio del contrato de la API de SOMA, con su fecha y su tipo:
 Cada versión tiene su [release](https://github.com/SomaEngine/soma-api-docs/releases) con estas
 mismas notas.
 
+## v1.0.0-draft · 2026-11-10
+
+**Disponible en el ambiente de pruebas (ventas)**
+
+- Confirmar el lote (`POST /v1/ingest/batches/{id}/commit`, `202`): aplica solo la diferencia en
+  segundo plano, de a un lote por empresa y entidad, y espera si la empresa tiene un cálculo de
+  plan en curso.
+- Atajo de una llamada para lotes chicos (`POST /v1/ingest/sales`).
+- `GET /v1/data-health`: frescura por fuente y ubicación (`fresh`, `late`, `stale`, `missing`) y
+  si los cálculos del plan están bloqueados.
+- Retención por volumen anómalo (`volume_anomaly`): una semana completa bajo el 15% de lo esperado.
+
+**Compatible (se agrega al contrato)**
+
+- Código `service_unavailable` (`503`, con `Retry-After`) cuando la base de SOMA no acepta
+  escrituras por un momento. Antes era un `500` genérico. Todas las rutas de v1 lo documentan.
+- Código `batch_discarded`: un lote retenido que se descartó en la revisión de datos o que
+  reemplazó un lote más nuevo.
+
+**Guía**
+
+- Nuevas secciones: frescura de los datos, reintentos y carga inicial en lotes de varias semanas.
+- Certificación: el conector comprueba que la fuente ya cubre cada período que envía, no solo que
+  la leyó completa.
+
 ## v1.0.0-draft · 2026-11-04
 
 Primer borrador público del contrato v1. Puede recibir ajustes hasta `1.0.0`.

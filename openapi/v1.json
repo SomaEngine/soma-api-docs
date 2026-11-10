@@ -484,6 +484,7 @@
           "rate_limited",
           "validation_error",
           "payload_too_large",
+          "service_unavailable",
           "batch_not_found",
           "batch_id_conflict",
           "batch_not_open",
@@ -496,6 +497,7 @@
           "value_basis_undeclared",
           "location_declared_without_lines",
           "as_of_in_future",
+          "batch_discarded",
           "deletion_guard_tripped",
           "volume_anomaly",
           "unknown_location",
@@ -1682,6 +1684,17 @@
               "application/problem+json": {}
             },
             "description": "Límite de requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La base no acepta escrituras por un momento (Retry-After)"
           }
         },
         "security": [
@@ -1831,6 +1844,17 @@
               "application/problem+json": {}
             },
             "description": "Límite de requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La base no acepta escrituras por un momento (Retry-After)"
           }
         },
         "security": [
@@ -1940,6 +1964,17 @@
               "application/problem+json": {}
             },
             "description": "Límite de requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La base no acepta escrituras por un momento (Retry-After)"
           }
         },
         "security": [
@@ -2034,6 +2069,17 @@
               "application/problem+json": {}
             },
             "description": "Límite de requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La base no acepta escrituras por un momento (Retry-After)"
           }
         },
         "security": [
@@ -2150,6 +2196,17 @@
               "application/problem+json": {}
             },
             "description": "Límite de requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La base no acepta escrituras por un momento (Retry-After)"
           }
         },
         "security": [
@@ -2255,6 +2312,17 @@
               "application/problem+json": {}
             },
             "description": "Límite de requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La base no acepta escrituras por un momento (Retry-After)"
           }
         },
         "security": [
@@ -2392,6 +2460,17 @@
               "application/problem+json": {}
             },
             "description": "Límite de requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La base no acepta escrituras por un momento (Retry-After)"
           }
         },
         "security": [
@@ -2514,6 +2593,17 @@
               "application/problem+json": {}
             },
             "description": "Límite de requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La base no acepta escrituras por un momento (Retry-After)"
           }
         },
         "security": [
@@ -2636,6 +2726,17 @@
               "application/problem+json": {}
             },
             "description": "Límite de requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La base no acepta escrituras por un momento (Retry-After)"
           }
         },
         "security": [
@@ -2758,6 +2859,17 @@
               "application/problem+json": {}
             },
             "description": "Límite de requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La base no acepta escrituras por un momento (Retry-After)"
           }
         },
         "security": [
@@ -2880,6 +2992,17 @@
               "application/problem+json": {}
             },
             "description": "Límite de requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La base no acepta escrituras por un momento (Retry-After)"
           }
         },
         "security": [
@@ -2950,6 +3073,17 @@
               "application/problem+json": {}
             },
             "description": "Límite de requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "La base no acepta escrituras por un momento (Retry-After)"
           }
         },
         "security": [
