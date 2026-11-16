@@ -1,16 +1,257 @@
-/* Colores de marca SOMA (teal + navy) sobre el tema Material. */
-:root, [data-md-color-scheme="default"] {
-  --md-primary-fg-color: #0F1F3D;
-  --md-primary-fg-color--light: #23365C;
-  --md-primary-fg-color--dark: #0A1630;
-  --md-accent-fg-color: #00A38C;
-  --md-typeset-a-color: #00866F;
+/* Estilo SOMA sobre Material: los mismos tokens que la guía técnica original (teal + navy,
+   Inter + JetBrains Mono, escala de tamaños). Material usa html { font-size: 125% } (1rem = 20px),
+   así que los tamaños de la guía (rem de 16px) van aquí multiplicados por 0,8. */
+:root {
+  --soma-bg: #F5F7FA;
+  --soma-surface: #FFFFFF;
+  --soma-ink: #0F1F3D;
+  --soma-muted: #55627A;
+  --soma-line: #DCE2EC;
+  --soma-teal: #00A38C;
+  --soma-teal-soft: #E3F5F2;
+  --soma-warn: #B4610B;
+  --soma-warn-soft: #FDF1E3;
+  --soma-bad: #B42318;
+  --soma-bad-soft: #FDECEA;
+  --soma-code-bg: #0F1F3D;
+  --soma-code-ink: #DDE6F5;
+  --soma-code-key: #5FD8C4;
+  --soma-code-str: #F2C27B;
+  --soma-code-dim: #8A9BBA;
 }
 [data-md-color-scheme="slate"] {
-  --md-primary-fg-color: #111C30;
-  --md-primary-fg-color--light: #1A2740;
-  --md-primary-fg-color--dark: #0A1222;
-  --md-accent-fg-color: #19BFA6;
-  --md-typeset-a-color: #19BFA6;
-  --md-default-bg-color: #0A1222;
+  --soma-bg: #0A1222;
+  --soma-surface: #111C30;
+  --soma-ink: #E6ECF5;
+  --soma-muted: #9AA8BF;
+  --soma-line: #22314C;
+  --soma-teal: #19BFA6;
+  --soma-teal-soft: #0F2E30;
+  --soma-warn: #F0A55A;
+  --soma-warn-soft: #2E2214;
+  --soma-bad: #F2867A;
+  --soma-bad-soft: #341A1A;
+  --soma-code-bg: #070E1C;
+  --soma-code-ink: #CFDAEC;
+  --soma-code-dim: #7586A3;
 }
+
+/* ── Tema Material con los tokens ───────────────────────────────────────────── */
+:root, [data-md-color-scheme="default"], [data-md-color-scheme="slate"] {
+  --md-default-bg-color: var(--soma-bg);
+  --md-default-fg-color: var(--soma-ink);
+  --md-default-fg-color--light: var(--soma-muted);
+  --md-default-fg-color--lighter: var(--soma-line);
+  --md-default-fg-color--lightest: var(--soma-line);
+  --md-typeset-color: var(--soma-ink);
+  --md-typeset-a-color: var(--soma-teal);
+  --md-accent-fg-color: var(--soma-teal);
+  --md-accent-fg-color--transparent: var(--soma-teal-soft);
+  --md-primary-fg-color: var(--soma-surface);
+  --md-primary-fg-color--light: var(--soma-surface);
+  --md-primary-fg-color--dark: var(--soma-surface);
+  --md-primary-bg-color: var(--soma-ink);
+  --md-primary-bg-color--light: var(--soma-muted);
+  --md-code-bg-color: var(--soma-teal-soft);
+  --md-code-fg-color: var(--soma-ink);
+  --md-text-font: "Inter";
+  --md-code-font: "JetBrains Mono";
+}
+
+body { background: var(--soma-bg); }
+.md-main, .md-content { background: var(--soma-bg); }
+
+/* Encabezado blanco con línea, como la barra de la guía */
+.md-header {
+  background: var(--soma-surface);
+  color: var(--soma-ink);
+  box-shadow: none;
+  border-bottom: 1px solid var(--soma-line);
+}
+.md-header__title { font-weight: 600; }
+.md-tabs { background: var(--soma-surface); color: var(--soma-muted); border-bottom: 1px solid var(--soma-line); }
+.md-search__form { background: var(--soma-bg); border: 1px solid var(--soma-line); }
+.md-search__input, .md-search__icon { color: var(--soma-ink); }
+
+/* ── Tipografía (escala de la guía: 0,9875 / 1,2 / 1,55 / 2,5 rem de 16px) ── */
+.md-typeset {
+  font-size: 0.79rem;            /* 15,8px */
+  line-height: 1.6;
+  color: var(--soma-ink);
+}
+.md-typeset h1, .md-typeset h2, .md-typeset h3 { color: var(--soma-ink); line-height: 1.2; text-wrap: balance; }
+.md-typeset h1 {
+  font-size: clamp(1.52rem, 3.2vw, 2rem);   /* hasta 40px */
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.8rem;
+}
+.md-typeset h2 {
+  font-size: 1.24rem;            /* 24,8px */
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 2.2rem 0 0.9rem;
+  padding-top: 1.8rem;
+  border-top: 1px solid var(--soma-line);
+}
+.md-typeset h3 { font-size: 0.96rem; font-weight: 600; margin: 1.6rem 0 0.6rem; }
+.md-typeset h4 { font-size: 0.8rem; font-weight: 600; }
+.md-typeset p, .md-typeset ul, .md-typeset ol { max-width: 70ch; }
+.md-typeset a { color: var(--soma-teal); }
+.md-typeset a:hover { color: var(--soma-ink); }
+.md-typeset .headerlink { color: var(--soma-line); }
+
+/* Cabecera de página: eyebrow, lead y chips */
+.md-typeset .eyebrow {
+  font-size: 0.65rem;            /* 13px */
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: var(--soma-teal);
+  margin: 0 0 0.6rem;
+}
+.md-typeset .lead {
+  font-size: 0.96rem;            /* 19,2px */
+  color: var(--soma-muted);
+  max-width: 62ch;
+  margin: 0 0 0.9rem;
+}
+.md-typeset .meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1.6rem; }
+.md-typeset .chip {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-size: 0.65rem; color: var(--soma-muted);
+  border: 1px solid var(--soma-line); border-radius: 999px;
+  padding: 0.15rem 0.55rem; background: var(--soma-surface);
+}
+.md-typeset .chip b { font-family: var(--md-code-font-family); font-weight: 600; color: var(--soma-ink); }
+
+/* ── Código ──────────────────────────────────────────────────────────────── */
+.md-typeset code {
+  font-size: 0.86em;
+  background: var(--soma-teal-soft);
+  color: var(--soma-ink);
+  padding: 0.05em 0.3em;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+.md-typeset pre > code {
+  background: var(--soma-code-bg);
+  color: var(--soma-code-ink);
+  border-radius: 10px;
+  padding: 0.8rem 0.9rem;
+  font-size: 0.65rem;            /* 13px */
+  line-height: 1.6;
+  overflow-wrap: normal;
+}
+.md-typeset .highlight { --md-code-bg-color: var(--soma-code-bg); --md-code-fg-color: var(--soma-code-ink); }
+.md-typeset .highlight .s, .md-typeset .highlight .s1, .md-typeset .highlight .s2 { color: var(--soma-code-str); }
+.md-typeset .highlight .nt, .md-typeset .highlight .na, .md-typeset .highlight .k, .md-typeset .highlight .kc { color: var(--soma-code-key); }
+.md-typeset .highlight .c, .md-typeset .highlight .c1, .md-typeset .highlight .cm { color: var(--soma-code-dim); }
+.md-typeset .highlight .mi, .md-typeset .highlight .mf, .md-typeset .highlight .m { color: var(--soma-code-str); }
+.md-typeset .highlight .p, .md-typeset .highlight .o { color: var(--soma-code-ink); }
+.md-clipboard { color: var(--soma-code-dim); }
+
+/* ── Tablas: superficie blanca, borde redondeado, encabezado en versalitas ── */
+.md-typeset__scrollwrap { margin: 1rem 0; }
+.md-typeset__table { display: block; padding: 0; }
+.md-typeset table:not([class]) {
+  display: table;
+  width: 100%;
+  font-size: 0.72rem;            /* 14,4px */
+  border: 1px solid var(--soma-line);
+  border-radius: 10px;
+  background: var(--soma-surface);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  box-shadow: none;
+}
+.md-typeset table:not([class]) th {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--soma-muted);
+  font-weight: 600;
+  background: var(--soma-bg);
+  border-bottom: 1px solid var(--soma-line);
+  padding: 0.5rem 0.7rem;
+}
+.md-typeset table:not([class]) td {
+  border-top: 0;
+  border-bottom: 1px solid var(--soma-line);
+  padding: 0.5rem 0.7rem;
+  vertical-align: top;
+}
+.md-typeset table:not([class]) tr:last-child td { border-bottom: 0; }
+.md-typeset table:not([class]) tbody tr:hover { background: transparent; box-shadow: none; }
+/* Tablas de dos columnas sin encabezado (| | |) */
+.md-typeset table:not([class]) thead:has(th:empty:only-child),
+.md-typeset table:not([class]) thead:not(:has(th:not(:empty))) { display: none; }
+
+/* Métodos HTTP y estados */
+.md-typeset .method {
+  font-family: var(--md-code-font-family); font-size: 0.6rem; font-weight: 600;
+  padding: 0.1rem 0.35rem; border-radius: 4px; margin-right: 0.3rem;
+}
+.md-typeset .m-post { background: var(--soma-teal-soft); color: var(--soma-teal); }
+.md-typeset .m-get { background: var(--soma-bg); color: var(--soma-muted); border: 1px solid var(--soma-line); }
+.md-typeset .st {
+  display: inline-block; font-size: 0.61rem; font-weight: 600;
+  border-radius: 999px; padding: 0.05rem 0.45rem; white-space: nowrap;
+}
+.md-typeset .st.ok { background: var(--soma-teal-soft); color: var(--soma-teal); }
+.md-typeset .st.next { background: var(--soma-warn-soft); color: var(--soma-warn); }
+.md-typeset .st.bad { background: var(--soma-bad-soft); color: var(--soma-bad); }
+
+/* ── Notas (admonitions) como la caja .note de la guía ──────────────────── */
+.md-typeset .admonition, .md-typeset details {
+  font-size: 0.74rem;
+  border: 1px solid var(--soma-line);
+  border-left: 3px solid var(--soma-teal);
+  border-radius: 8px;
+  background: var(--soma-surface);
+  box-shadow: none;
+  max-width: 74ch;
+}
+.md-typeset .admonition-title, .md-typeset summary {
+  background: transparent !important;
+  color: var(--soma-ink);
+  font-weight: 600;
+  border: 0;
+}
+.md-typeset .admonition-title::before, .md-typeset summary::before { background-color: var(--soma-teal); }
+.md-typeset .admonition p { color: var(--soma-muted); }
+.md-typeset .admonition.warning, .md-typeset .admonition.danger { border-left-color: var(--soma-warn); }
+.md-typeset .admonition.warning .admonition-title::before,
+.md-typeset .admonition.danger .admonition-title::before { background-color: var(--soma-warn); }
+
+/* ── Navegación lateral e índice: gris, activo en teal, eyebrow en teal ── */
+.md-nav { font-size: 0.72rem; }
+.md-nav__title { color: var(--soma-teal); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.65rem; font-weight: 600; }
+.md-nav__link { color: var(--soma-muted); }
+.md-nav__link:hover, .md-nav__link:focus { color: var(--soma-ink); }
+.md-nav__link--active, .md-nav__item .md-nav__link--active { color: var(--soma-teal); font-weight: 600; }
+.md-sidebar--secondary .md-nav__link--active { color: var(--soma-teal); }
+
+/* ── Pie ───────────────────────────────────────────────────────────────── */
+.md-footer, .md-footer-meta { background: var(--soma-surface); color: var(--soma-muted); border-top: 1px solid var(--soma-line); }
+.md-footer-meta__inner, .md-copyright { color: var(--soma-muted); }
+.md-footer__link, .md-footer__title { color: var(--soma-ink); }
+
+/* Material colorea cada tipo de nota (note azul, info celeste…): todas en la paleta SOMA. */
+.md-typeset .admonition.note, .md-typeset .admonition.info, .md-typeset .admonition.tip,
+.md-typeset .admonition.abstract, .md-typeset .admonition.success, .md-typeset .admonition.question,
+.md-typeset details.note, .md-typeset details.info, .md-typeset details.tip {
+  border-color: var(--soma-line);
+  border-left-color: var(--soma-teal);
+}
+.md-typeset .note > .admonition-title::before, .md-typeset .info > .admonition-title::before,
+.md-typeset .tip > .admonition-title::before, .md-typeset .abstract > .admonition-title::before,
+.md-typeset .success > .admonition-title::before, .md-typeset .question > .admonition-title::before,
+.md-typeset .note > summary::before, .md-typeset .info > summary::before { background-color: var(--soma-teal); }
+.md-typeset .admonition.warning, .md-typeset .admonition.danger, .md-typeset .admonition.failure,
+.md-typeset .admonition.bug, .md-typeset details.warning {
+  border-color: var(--soma-line);
+  border-left-color: var(--soma-warn);
+}
+.md-typeset .admonition > :last-child { margin-bottom: 0.6rem; }

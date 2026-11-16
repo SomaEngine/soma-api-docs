@@ -9,6 +9,9 @@ copyright: SOMA Engine · Los datos de los ejemplos son ficticios
 theme:
   name: material
   language: es
+  font:
+    text: Inter
+    code: JetBrains Mono
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -38,6 +41,7 @@ nav:
 
 markdown_extensions:
   - admonition
+  - md_in_html
   - attr_list
   - tables
   - toc: { permalink: true }
