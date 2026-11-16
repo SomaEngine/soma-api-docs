@@ -1,6 +1,9 @@
+<p class="eyebrow">SOMA Engine · Integraciones</p>
+
 # Integraciones SOMA
 
 **Tus datos llegan a SOMA solos, cada semana, y llegan bien.**
+{ .lead }
 
 Un conector hecho para tu empresa lee tus sistemas y le entrega a SOMA ventas, inventario y
 órdenes. Tu equipo deja de preparar archivos, y el plan de cada semana se calcula con los datos
