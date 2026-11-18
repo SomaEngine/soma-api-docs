@@ -22,7 +22,19 @@ de esa semana.
 | **Plan con datos al día** | Pronóstico y reposición se calculan sobre la última semana cerrada, no sobre la planilla del mes pasado. |
 | **Errores visibles a tiempo** | Lo que no cuadra se detecta al llegar y se muestra a tu equipo antes de que entre al plan. |
 
-## Cómo funciona
+## Formas de conectarse
+
+Los datos automáticos entran a SOMA siempre por la misma puerta: la **API de SOMA**, que es una
+sola para todos los clientes y revisa todo lo que llega con las mismas reglas. Lo que cambia es
+quién lleva los datos hasta esa puerta.
+
+| | Quién hace el trabajo | Cuándo conviene |
+|---|---|---|
+| **Conector de SOMA** | SOMA construye y opera un programa que lee tus datos y los envía a la API. Tu equipo solo da un acceso de solo lectura: [consultas que expone tu sistema](guia/consulta.md), la base de datos o una carpeta de archivos | Lo habitual. Tu equipo no programa nada |
+| **Envío directo** | El equipo de sistemas de tu empresa programa el envío a la API, siguiendo la [guía técnica](guia/v1.md). No hay conector de SOMA en el medio | Tienes equipo de sistemas y prefieres controlar el envío |
+| **Planillas** | Tu equipo sube archivos Excel en la plataforma de SOMA | Mientras se pone en marcha la integración, o para datos que cambian poco |
+
+## Cómo funciona el conector
 
 ```mermaid
 flowchart LR
@@ -47,8 +59,8 @@ flowchart LR
 lectura; nada cambia en ellos.
 
 **El conector** es lo único que conoce tu sistema y lo traduce al formato de SOMA: unidades,
-formatos numéricos, códigos propios. Comprueba que leyó todo antes de enviar. Lo opera SOMA, o
-tu equipo si prefiere enviar directo.
+formatos numéricos, códigos propios. Comprueba que leyó todo antes de enviar. Si tu equipo elige
+el envío directo, su programa cumple este mismo papel.
 
 **La API de SOMA** es una sola para todos los clientes. Revisa cada envío, avisa lo que no
 cuadra y guarda solo lo que cambió.
@@ -57,13 +69,16 @@ cuadra y guarda solo lo que cambió.
 
 Solo lo que la planificación necesita:
 
-- **Ventas**: por día, ubicación y producto, con las devoluciones aparte.
+- **Ventas**: por día, ubicación y producto, con las devoluciones aparte. Opcionalmente, por
+  cliente y vendedor.
+- **Cantidades** en la unidad en que se planifica y, si tu empresa la lleva, también en galones
+  o kilos.
 - **Inventario**: lo disponible en cada ubicación a la fecha de corte.
 - **Compras en tránsito**: lo pedido que todavía no llega, y cuándo llega.
 - **Producción en curso**: lo que está en planta y cuándo termina.
 
-No viajan datos personales de tus clientes finales, ni órdenes en borrador o anuladas. Los
-valores van en dólares y sin IVA.
+No viajan órdenes en borrador o anuladas, ni datos personales: si se envía el cliente, es el
+código y el nombre de la empresa o comercio al que vendes. Los valores van en dólares y sin IVA.
 
 ## Calidad de datos
 
@@ -110,5 +125,6 @@ Un dato malo no detiene la carga, y un dato dudoso no llega al plan sin que algu
 ## Qué necesitamos de tu equipo
 
 - Un acceso de solo lectura a la fuente de datos.
-- Una dirección alcanzable con cifrado (HTTPS o VPN).
+- Una dirección alcanzable con cifrado (HTTPS o VPN). Si tu red autoriza por IP, SOMA te da las
+  direcciones fijas desde las que se conecta.
 - Una persona de contacto para validar las cifras de las primeras semanas.

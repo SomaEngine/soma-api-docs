@@ -35,6 +35,7 @@ extra_css:
 nav:
   - Integraciones: index.md
   - Guía técnica v1: guia/v1.md
+  - Integración por consulta: guia/consulta.md
   - Errores: errores.md
   - Referencia OpenAPI: referencia.md
   - Cambios: changelog.md

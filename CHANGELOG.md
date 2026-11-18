@@ -9,6 +9,30 @@ Cada cambio del contrato de la API de SOMA, con su fecha y su tipo:
 Cada versión tiene su [release](https://github.com/SomaEngine/soma-api-docs/releases) con estas
 mismas notas.
 
+## v1.0.0-draft · 2026-11-18
+
+**Compatible (se agrega al contrato)**
+
+Campos opcionales nuevos, disponibles en el ambiente de pruebas. Quien ya integró no tiene que
+cambiar nada.
+
+- **Unidad secundaria** en ventas, inventario y órdenes de producción: `secondary_quantity` y
+  `secondary_uom`, para empresas que llevan cada cantidad también en galones o kilos.
+- **Ventas por cliente**: `customer_code`, `customer_name`, `seller_code` y `seller_name`. El
+  cliente forma parte de la clave de la línea; el vendedor no.
+- **Devoluciones**: `original_document_ref`, la factura de la venta que se devuelve.
+- **Órdenes de producción**: `quantity_pending` acepta 0 y esa línea se descarta sin error.
+  `status` pasa a opcional (sin estado = `in_progress`).
+- **Estado del lote**: `lines_discarded` cuenta las líneas descartadas sin error. En empresas que
+  analizan por cliente, `unmatched` suma `customers` (clientes sin ficha) y
+  `lines_without_customer`.
+
+**Guía**
+
+- Nueva página: [integración por consulta](guia/consulta.md). El conector de SOMA consulta los
+  datos que expone el sistema de la empresa, con IPs fijas y token. En preparación.
+- Inventario: `exp_date` es lo que usa la planificación; `lot` sirve para filtrar.
+
 ## v1.0.0-draft · 2026-11-10
 
 **Disponible en el ambiente de pruebas (ventas)**

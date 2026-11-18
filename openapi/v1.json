@@ -192,6 +192,12 @@
             ],
             "title": "Finished At"
           },
+          "lines_discarded": {
+            "default": 0,
+            "description": "Líneas descartadas sin error, p. ej. órdenes de producción con saldo 0",
+            "title": "Lines Discarded",
+            "type": "integer"
+          },
           "lines_quarantined": {
             "default": 0,
             "title": "Lines Quarantined",
@@ -599,6 +605,7 @@
                 "type": "null"
               }
             ],
+            "description": "Vencimiento. Vacío = no vence",
             "title": "Exp Date"
           },
           "location": {
@@ -617,12 +624,40 @@
                 "type": "null"
               }
             ],
+            "description": "Opcional. Para filtrar a futuro; lo que importa es exp_date",
             "title": "Lot"
           },
           "quantity_on_hand": {
             "minimum": 0.0,
             "title": "Quantity On Hand",
             "type": "number"
+          },
+          "secondary_quantity": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secondary Quantity"
+          },
+          "secondary_uom": {
+            "anyOf": [
+              {
+                "maxLength": 16,
+                "minLength": 1,
+                "pattern": "^[A-Z0-9_]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unidad de secondary_quantity (GAL, KG…). Omitida = la unidad secundaria del producto en el maestro (products.secondary_uom)",
+            "title": "Secondary Uom"
           },
           "sku": {
             "maxLength": 100,
@@ -853,7 +888,7 @@
       },
       "ProductionOrderLine": {
         "additionalProperties": false,
-        "description": "Orden de producción en curso (§4.5). Planificadas, canceladas y anuladas no se envían.\n\nIdentidad: (ubicación, order_ref, sku). Clave repetida → `duplicate_key`, no se suma.",
+        "description": "Orden de producción abierta (§4.5). Planificadas, cerradas, canceladas y anuladas no se envían.\n\nSolo cuentan las órdenes abiertas con saldo: una línea con saldo 0 se descarta (se cuenta,\nno va a cuarentena) — la orden ya entró al inventario.\nIdentidad: (ubicación, order_ref, sku). Clave repetida → `duplicate_key`, no se suma.",
         "properties": {
           "expected_completion_date": {
             "format": "date",
@@ -874,10 +909,37 @@
             "type": "string"
           },
           "quantity_pending": {
-            "description": "Planificado − producido",
-            "exclusiveMinimum": 0.0,
+            "description": "Saldo: planificado − producido. 0 = se descarta",
+            "minimum": 0.0,
             "title": "Quantity Pending",
             "type": "number"
+          },
+          "secondary_quantity": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secondary Quantity"
+          },
+          "secondary_uom": {
+            "anyOf": [
+              {
+                "maxLength": 16,
+                "minLength": 1,
+                "pattern": "^[A-Z0-9_]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unidad de secondary_quantity (GAL, KG…). Omitida = la unidad secundaria del producto en el maestro (products.secondary_uom)",
+            "title": "Secondary Uom"
           },
           "sku": {
             "maxLength": 100,
@@ -898,6 +960,8 @@
             "title": "Soma Ref"
           },
           "status": {
+            "default": "in_progress",
+            "description": "Omitido = in_progress (orden abierta)",
             "enum": [
               "released",
               "in_progress"
@@ -926,8 +990,7 @@
           "order_ref",
           "sku",
           "quantity_pending",
-          "expected_completion_date",
-          "status"
+          "expected_completion_date"
         ],
         "title": "ProductionOrderLine",
         "type": "object"
@@ -1338,8 +1401,33 @@
       },
       "SalesLine": {
         "additionalProperties": false,
-        "description": "Movimiento de venta o devolución de un día (diseno-api-ingesta.md §4.2).\n\nGrano: las líneas son **aditivas**. Varias con la misma clave (`line_key`: ubicación, SKU,\nfecha, movimiento y, en devoluciones, fecha original) se **suman** — cantidad, valor y venta\nperdida —, ya convertidas a unidad base. El conector puede enviar líneas de documento o ya\nagregadas: el resultado es el mismo. `document_ref` es solo trazabilidad, no identidad.",
+        "description": "Movimiento de venta o devolución de un día (diseno-api-ingesta.md §4.2).\n\nGrano: las líneas son **aditivas**. Varias con la misma clave (`line_key`: ubicación, SKU,\nfecha, movimiento, en devoluciones fecha original, y cliente) se **suman** — cantidad,\ncantidad secundaria, valor y venta perdida —, ya convertidas a unidad base. El conector\npuede enviar líneas de documento o ya agregadas: el resultado es el mismo. `document_ref` y\n`original_document_ref` son solo trazabilidad, no identidad.\n\nCliente y vendedor son opcionales. Solo se guardan si la empresa tiene activo el detalle por\ncliente (parámetro `sales.by_customer`); si no, se aceptan y se ignoran. El vendedor es\natributo del cliente-producto, no parte de la clave.",
         "properties": {
+          "customer_code": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Code"
+          },
+          "customer_name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Name"
+          },
           "date": {
             "format": "date",
             "title": "Date",
@@ -1384,6 +1472,19 @@
             "title": "Movement",
             "type": "string"
           },
+          "original_document_ref": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Solo en return: factura de la venta que se devuelve",
+            "title": "Original Document Ref"
+          },
           "original_sale_date": {
             "anyOf": [
               {
@@ -1402,6 +1503,59 @@
             "exclusiveMinimum": 0.0,
             "title": "Quantity",
             "type": "number"
+          },
+          "secondary_quantity": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Misma cantidad en la unidad secundaria (GAL, KG…). Siempre > 0, como quantity",
+            "title": "Secondary Quantity"
+          },
+          "secondary_uom": {
+            "anyOf": [
+              {
+                "maxLength": 16,
+                "minLength": 1,
+                "pattern": "^[A-Z0-9_]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unidad de secondary_quantity (GAL, KG…). Omitida = la unidad secundaria del producto en el maestro (products.secondary_uom)",
+            "title": "Secondary Uom"
+          },
+          "seller_code": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seller Code"
+          },
+          "seller_name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seller Name"
           },
           "sku": {
             "maxLength": 100,
