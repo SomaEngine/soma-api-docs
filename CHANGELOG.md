@@ -27,6 +27,11 @@ cambiar nada.
   analizan por cliente, `unmatched` suma `customers` (clientes sin ficha) y
   `lines_without_customer`.
 
+**Disponible en el ambiente de pruebas**
+
+- Inventario y órdenes de producción: abrir, partes, `dry-run`, `commit` y los atajos
+  `POST /v1/ingest/inventory` y `POST /v1/ingest/production_orders`.
+
 **Guía**
 
 - Nueva página: [integración por consulta](guia/consulta.md). El conector de SOMA consulta los

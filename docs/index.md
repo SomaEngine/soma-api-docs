@@ -10,8 +10,9 @@ Un conector hecho para tu empresa lee tus sistemas y le entrega a SOMA ventas, i
 de esa semana.
 
 !!! info "Estado"
-    El envío de ventas funciona de punta a punta en el ambiente de pruebas desde noviembre de
-    2026: envío, revisión, aplicación y frescura por ubicación. Inventario y órdenes vienen después.
+    El envío de ventas, inventario y órdenes de producción funciona de punta a punta en el
+    ambiente de pruebas desde noviembre de 2026: envío, revisión, aplicación y frescura por
+    ubicación. Las órdenes de compra vienen después.
     Ver [la guía técnica](guia/v1.md#estado) para el detalle por ruta.
 
 ## Qué gana tu empresa
