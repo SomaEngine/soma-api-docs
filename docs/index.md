@@ -31,7 +31,7 @@ quién lleva los datos hasta esa puerta.
 
 | | Quién hace el trabajo | Cuándo conviene |
 |---|---|---|
-| **Conector de SOMA** | SOMA construye y opera un programa que lee tus datos y los envía a la API. Tu equipo solo da un acceso de solo lectura: [consultas que expone tu sistema](guia/consulta.md), la base de datos o una carpeta de archivos | Lo habitual. Tu equipo no programa nada |
+| **Conector de SOMA** | SOMA construye y opera un programa que lee tus datos y los envía a la API. Tu equipo solo da un acceso de solo lectura: [endpoints de solo lectura de tu sistema](guia/consulta.md), la base de datos o una carpeta de archivos | Lo habitual. Tu equipo no programa nada |
 | **Envío directo** | El equipo de sistemas de tu empresa programa el envío a la API, siguiendo la [guía técnica](guia/v1.md). No hay conector de SOMA en el medio | Tienes equipo de sistemas y prefieres controlar el envío |
 | **Planillas** | Tu equipo sube archivos Excel en la plataforma de SOMA | Mientras se pone en marcha la integración, o para datos que cambian poco |
 

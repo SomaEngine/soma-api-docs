@@ -2,7 +2,7 @@
 
 # Integración por consulta
 
-Tu sistema publica sus datos en unas pocas consultas de solo lectura, y en cada corte el
+Tu sistema publica sus datos en unos pocos endpoints de solo lectura, y en cada corte el
 conector de SOMA las llama. Tu equipo no programa envíos, lotes ni reintentos: solo responde con
 los mismos campos de la API v1.
 { .lead }
@@ -28,18 +28,21 @@ Las dos formas usan el mismo contrato de datos. Cambia quién llama a quién.
 | | Envío directo ([guía v1](v1.md)) | Por consulta (esta página) |
 |---|---|---|
 | Quién inicia | Tu sistema llama a la API de SOMA | El conector de SOMA llama a tu sistema |
-| Qué construye tu equipo | Lotes, partes, `dry-run`, `commit` y reintentos | De tres a cuatro consultas de solo lectura |
+| Qué construye tu equipo | Lotes, partes, `dry-run`, `commit` y reintentos | De tres a cuatro endpoints de solo lectura |
 | Formato de las líneas | El de [Líneas](v1.md#lineas) | El mismo |
 | Revisión y calidad de datos | SOMA, igual en las dos | SOMA, igual en las dos |
+
+En los dos casos hay **una sola API: la de SOMA**. En la integración por consulta, los endpoints de
+tu sistema son la fuente de datos: el conector de SOMA los lee y entrega los datos a la API de SOMA.
 
 ## Cómo funciona
 
 ```mermaid
 sequenceDiagram
   participant C as Conector de SOMA (IPs fijas)
-  participant T as Tu servicio
+  participant T as Tus endpoints
   participant B as Tu base de datos
-  participant S as SOMA /v1
+  participant S as API de SOMA /v1
   Note over C: Corte acordado, p. ej. lunes 04:00
   C->>T: GET /soma/sales?date_from=…&date_to=…
   T->>B: consulta de solo lectura
@@ -53,7 +56,7 @@ sequenceDiagram
   S-->>C: aplicado, retenido o rechazado
 ```
 
-1. A la hora del corte, el conector llama a cada consulta.
+1. A la hora del corte, el conector llama a cada endpoint de tu sistema.
 2. Tu servicio lee su base de datos y responde con las líneas y su total.
 3. El conector comprueba que recibió todo y que cada línea cumple el contrato. Si algo no calza,
    no envía nada y SOMA conserva los datos anteriores.
@@ -67,21 +70,21 @@ sequenceDiagram
   lista por ambiente, y tu servicio solo responde a ellas. No hace falta VPN.
 - **Token.** Tu equipo emite un token por ambiente (pruebas y producción), que el conector
   envía en `Authorization: Bearer …`. SOMA lo guarda cifrado y nunca lo escribe en logs.
-- **Solo lectura.** Las consultas no modifican nada en tu sistema y devuelven solo los campos
+- **Solo lectura.** Tus endpoints no modifican nada en tu sistema y devuelven solo los campos
   de esta página. No viajan datos personales.
 
-## Las consultas
+## Los endpoints de tu sistema
 
 Las rutas son una sugerencia: los nombres finales se acuerdan en la puesta en marcha.
 
-| Consulta | Parámetros | Devuelve |
+| Endpoint | Parámetros | Devuelve |
 |---|---|---|
 | <span class="method m-get">GET</span>`/soma/sales` | `date_from`, `date_to`, `location` (opcional), `cursor` | Ventas y devoluciones del rango, por día |
 | <span class="method m-get">GET</span>`/soma/inventory` | `location` (opcional), `cursor` | La foto del disponible en este momento |
 | <span class="method m-get">GET</span>`/soma/production_orders` | `location` (opcional), `cursor` | Órdenes de producción abiertas con saldo |
 | <span class="method m-get">GET</span>`/soma/purchase_orders` | `location` (opcional), `cursor` | Órdenes de compra abiertas, si aplica |
 
-Sin `location`, la consulta devuelve todas las ubicaciones. Si un mismo servicio atiende a
+Sin `location`, el endpoint devuelve todas las ubicaciones. Si un mismo servicio atiende a
 varias empresas en SOMA, cada ubicación pertenece a una sola, y el conector reparte las líneas
 por ubicación.
 
@@ -119,7 +122,7 @@ Authorization: Bearer ••••••••
 | `extracted_at` | obligatorio | Cuándo se leyó la base, con zona horaria |
 | `date_from`, `date_to` | ventas | El rango que se pidió |
 | `as_of` | inventario y órdenes | Fecha de corte de la foto |
-| `total_lines` | obligatorio | Total de líneas de **toda** la consulta, contado en la misma lectura |
+| `total_lines` | obligatorio | Total de líneas de **toda** la respuesta (todas las páginas), contado en la misma lectura |
 | `partition_counts` | opcional | Líneas por ubicación. Si viene, tiene que sumar `total_lines` |
 | `lines` | obligatorio | Cada línea con los campos exactos de [Líneas](v1.md#lineas) |
 | `next_cursor` | obligatorio | `null` en la última página |
@@ -129,13 +132,13 @@ Authorization: Bearer ••••••••
     camino, sin un total para comparar se leería como ventas en cero. Con `total_lines`, el
     conector detecta el corte y no envía nada.
 
-- **Páginas.** Hasta 10.000 líneas por página. Si la consulta cabe en una, `next_cursor` es
-  `null`. Todas las páginas de una consulta salen de la misma lectura de la base.
+- **Páginas.** Hasta 10.000 líneas por página. Si la respuesta cabe en una, `next_cursor` es
+  `null`. Todas las páginas de una respuesta salen de la misma lectura de la base.
 - **Líneas estrictas.** Un campo con otro nombre (`qty` en lugar de `quantity`) o que no está en
   el contrato aparta la línea. Los campos opcionales que no tienes se omiten: no se envían
   vacíos ni en cero.
 
-## Qué va en cada consulta
+## Qué va en cada endpoint
 
 **Ventas**
 
@@ -158,7 +161,7 @@ Authorization: Bearer ••••••••
 
 - Solo las abiertas con saldo mayor que cero. Las entregas parciales rebajan el saldo.
 - La fecha estimada de disponibilidad, actualizada cuando la orden se atrasa.
-- Las órdenes abiertas hace mucho que ya no van a producirse se filtran en tu consulta. Si no,
+- Las órdenes abiertas hace mucho que ya no van a producirse se filtran en tu endpoint. Si no,
   entran al plan como producción por llegar.
 
 **En todas**
@@ -178,14 +181,14 @@ Authorization: Bearer ••••••••
 | Error interno | `500` | Reintenta tres veces con espera creciente; si sigue, avisa a tu contacto y a SOMA |
 
 - El conector espera hasta 10 minutos por respuesta.
-- Si una consulta falla, SOMA conserva los datos de la semana anterior y lo muestra en la
+- Si un endpoint falla, SOMA conserva los datos de la semana anterior y lo muestra en la
   frescura de los datos ([`/v1/data-health`](v1.md#frescura-de-los-datos-v1data-health)).
 
 ## Puesta en marcha
 
-1. **Consultas en pruebas** (tu equipo): publicadas con su token de pruebas.
+1. **Endpoints en pruebas** (tu equipo): publicados con su token de pruebas.
 2. **IPs de SOMA** (SOMA → tu equipo): las autorizas en tu servicio.
-3. **Primera muestra** (juntos): una ubicación de cada consulta, para revisar el formato antes
+3. **Primera muestra** (juntos): una ubicación de cada endpoint, para revisar el formato antes
    de la carga completa.
 4. **Carga inicial y comparación** (juntos): la historia de ventas y la primera foto; se comparan
    las cifras con lo que tu equipo conoce.
@@ -193,10 +196,10 @@ Authorization: Bearer ••••••••
 
 ## Lista de verificación
 
-- [ ] Cada consulta responde por HTTPS solo a las IPs de SOMA y con token.
+- [ ] Cada endpoint responde por HTTPS solo a las IPs de SOMA y con token.
 - [ ] Las líneas usan exactamente los nombres de campo de la v1, sin campos extra.
-- [ ] `total_lines` es el total de toda la consulta y sale de la misma lectura que las líneas.
+- [ ] `total_lines` es el total de toda la respuesta y sale de la misma lectura que las líneas.
 - [ ] Ventas devuelve el rango completo pedido, no solo lo que cambió.
 - [ ] Inventario devuelve solo lo disponible; órdenes, solo las abiertas con saldo.
-- [ ] Con el período incompleto, la consulta responde un error, no datos parciales.
+- [ ] Con el período incompleto, el endpoint responde un error, no datos parciales.
 - [ ] Fechas, números y códigos con el formato de esta página.

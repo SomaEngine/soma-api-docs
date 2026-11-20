@@ -9,6 +9,13 @@ Cada cambio del contrato de la API de SOMA, con su fecha y su tipo:
 Cada versión tiene su [release](https://github.com/SomaEngine/soma-api-docs/releases) con estas
 mismas notas.
 
+## v1.0.0-draft · 2026-11-20
+
+**Guía**
+
+- Integración por consulta: lo que publica la empresa se llama ahora **endpoints de su sistema**, y
+  se aclara que en las dos formas de integración hay una sola API, la de SOMA.
+
 ## v1.0.0-draft · 2026-11-18
 
 **Compatible (se agrega al contrato)**
